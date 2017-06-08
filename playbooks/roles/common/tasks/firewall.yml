@@ -1,0 +1,23 @@
+---
+
+- name: disable firewalld
+  systemd:
+    name: firewalld
+    enabled: no
+    masked: yes
+    state: stopped
+
+- name: install needed packages
+  yum:
+    name: '{{ item }}'
+    state: installed
+  with_items:
+    - iptables-services
+
+- name: start iptables.service
+  service:
+    name: iptables
+    enabled: yes
+    masked: no
+    state: started
+

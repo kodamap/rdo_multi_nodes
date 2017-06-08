@@ -1,0 +1,10 @@
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+x.x.x.x controller
+x.x.x.x compute1
+x.x.x.x compute2
+x.x.x.x storage1
+x.x.x.x zabbix
+x.x.x.x elasticsearch
+
+

@@ -1,0 +1,13 @@
+[all:vars]
+stage=production
+
+[controller]
+x.x.x.x
+
+[compute]
+x.x.x.x
+x.x.x.x
+
+[block]
+x.x.x.x
+

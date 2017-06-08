@@ -1,0 +1,46 @@
+---
+
+- name: configure settings and deploy rdo on the controller node
+  hosts: controller 
+  vars_files:
+    - vars/{{ stage }}.yml
+  gather_facts: no
+
+  roles:
+    - controller
+
+- name: configure compute settings on the compute nodes
+  hosts: compute
+  vars_files:
+    - vars/{{ stage }}.yml
+  gather_facts: no
+
+  roles:
+   - compute
+
+- name: configure cinder settings on the controller node
+  hosts: controller
+  vars_files:
+    - vars/{{ stage }}.yml
+  gather_facts: no
+
+  roles:
+    - cinder_controller
+    
+- name: configure settings the storage nodes
+  hosts: block
+  vars_files:
+    - vars/{{ stage }}.yml
+  gather_facts: no
+
+  roles:
+    - cinder_block
+    
+- name: check openstack status
+  hosts: controller 
+  vars_files:
+    - vars/{{ stage }}.yml
+  gather_facts: no
+ 
+  roles:
+    - check_status

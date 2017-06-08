@@ -1,0 +1,38 @@
+---
+
+- name: copy openrc
+  copy: src=admin-openrc dest=/root owner=root group=root mode=644 backup=no
+
+- lineinfile:
+    path: /root/admin-openrc
+    regexp: '{{ item.regexp }}'
+    line: '{{ item.line }}'
+    backup: no
+  with_items:
+    - regexp: '^export OS_PASSWORD=.*'
+      line: 'export OS_PASSWORD={{ admin_pass }}'
+
+- name: openstack network agent list
+  shell: . /root/admin-openrc && openstack network agent list
+  register: result
+  ignore_errors: True
+
+- debug: var=result.stdout_lines
+  when: result | success
+
+- name: openstack compute service list
+  shell: . /root/admin-openrc && openstack compute service list
+  register: result
+  ignore_errors: True
+
+- debug: var=result.stdout_lines
+  when: result | success
+  
+- name: openstack volume service list
+  shell: . /root/admin-openrc && openstack volume service list
+  register: result
+  ignore_errors: True
+
+- debug: var=result.stdout_lines
+  when: result | success
+

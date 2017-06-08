@@ -1,0 +1,39 @@
+---
+
+- name: enable NetworkManager
+  systemd:
+    name: NetworkManager
+    enabled: yes
+    masked: no
+    state: started
+
+- name: install needed packages
+  yum:
+    name: '{{ item }}'
+    state: installed
+  with_items:
+    - NetworkManager-glib
+    - dbus-python
+    - pygobject2
+
+- name: nmcli modify eth3 for br-ex bridge  
+  nmcli:
+    type: ethernet
+    conn_name: eth3
+    ip4: 0.0.0.0
+    state: present
+    autoconnect: yes
+
+- name: disable NetworkManager
+  systemd:
+    name: NetworkManager
+    enabled: no
+    masked: yes
+    state: stopped
+
+- name: enable network.service
+  service:
+    name: network
+    enabled: yes
+    masked: no
+    state: started

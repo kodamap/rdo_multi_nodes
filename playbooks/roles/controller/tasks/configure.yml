@@ -1,0 +1,38 @@
+---
+
+- name: openstack horizon can_set_password True
+  lineinfile:
+    path: /usr/share/openstack-dashboard/openstack_dashboard/local/local_settings.py
+    regexp: "^    'can_set_password': .*,"
+    line: "    'can_set_password': True,"
+
+- name: restart httpd.service
+  service:
+    name: httpd
+    enabled: yes
+    masked: no
+    state: restarted
+
+- name: mariadb max_connections 256 to 512
+  lineinfile:
+    path: /etc/my.cnf.d/server.cnf 
+    regexp: '^max_connections = .*'
+    line: 'max_connections = 512'
+    backup: yes
+
+- name: restart mariadb.service
+  service:
+    name: mariadb
+    enabled: yes
+    masked: no
+    state: restarted
+
+- iptables_raw:
+    name: accept_cinder_node
+    rules: |
+      -A INPUT -s {{ storage1_ip }}/32 -p tcp -m multiport --dports 5671,5672 -m comment --comment "001 amqp incoming amqp_{{ storage1_ip}}" -j ACCEPT
+      -A INPUT -s {{ storage1_ip }}/32 -p tcp -m multiport --dports 3306 -m comment --comment "001 mariadb incoming mariadb_{{ storage1_ip}}" -j ACCEPT
+      -A INPUT -s {{ zabbix_ip }}/32 -p tcp -m multiport --dports 3306 -m comment --comment "001 mariadb incoming mariadb_{{ zabbix_ip}}" -j ACCEPT
+      -A INPUT -s {{ storage1_ip }}/32 -p tcp -m multiport --dports 6000,6001,6002,873 -m comment --comment "001 swift storage and rsync incoming swift_storage_and_rsync_{{ storage1_ip}}" -j ACCEPT
+      -A INPUT -p tcp -m multiport --dports 8776 -m comment --comment "001 cinder-api incoming cinder_api" -j ACCEPT
+    backup: yes

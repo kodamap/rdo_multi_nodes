@@ -1,0 +1,36 @@
+---
+
+- name: install openstack repo
+  yum:
+    name: https://rdoproject.org/repos/rdo-release.rpm
+    state: present
+
+- name: install packstack
+  yum:
+    name: '{{ item }}'
+    state: present
+  with_items:
+    - openstack-utils
+    
+- name: copy dvr script
+  copy: src=dvr_compute.sh dest=/root owner=root group=root mode=0755 backup=no
+
+- name: set metadata ip to {{ controller_ip }}
+  lineinfile:
+    path: /root/dvr_compute.sh
+    regexp: '{{ item.regexp }}'
+    line: '{{ item.line }}'
+    backup: yes
+  with_items:
+    - regexp: '^CONTROLLER_IP=.*'
+      line: 'CONTROLLER_IP={{ controller_ip }}'
+    - regexp: '^METADATA_PASS=.*'
+      line: 'METADATA_PASS={{ metadata_pass }}'
+
+- name: exec dvr script
+  command: /root/dvr_compute.sh
+  register: result
+- debug: var=result.stdout_lines
+  when: result | success
+  
+

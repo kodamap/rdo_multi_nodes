@@ -1,0 +1,4 @@
+---
+
+- include: ssh-key.yml
+- include: configure.yml

@@ -1,0 +1,25 @@
+---
+
+- name: apply common configuration to all nodes
+  hosts: all
+  vars_files:
+    - vars/{{ stage }}.yml
+  gather_facts: no
+ 
+  roles:
+   - common
+   - zabbix_agent
+#   - filebeat
+#   - packetbeat
+#   - topbeat
+#   - metricbeat
+
+- name: configure settings and deploy rdo on the controller node
+  hosts: controller 
+  vars_files:
+    - vars/{{ stage }}.yml
+  gather_facts: no
+
+  roles:
+    - rdo
+    - check_status

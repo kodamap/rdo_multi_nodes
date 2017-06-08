@@ -1,0 +1,25 @@
+---
+
+- name: install openstack repo
+  yum:
+    name: https://rdoproject.org/repos/rdo-release.rpm
+    state: present
+
+- name: install packstack
+  yum:
+    name: '{{ item }}'
+    state: present
+  with_items:
+    - openstack-utils
+    
+- name: copy dvr script
+  copy: src=dvr_controller.sh dest=/root owner=root group=root mode=0755 backup=no
+
+- name: exec dvr script
+  command: /root/dvr_controller.sh
+  register: result
+- debug: var=result.stdout_lines
+  when: result | success
+
+
+

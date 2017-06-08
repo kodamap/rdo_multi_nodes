@@ -1,0 +1,31 @@
+---
+
+- name: git clone https://git.openstack.org/openstack/neutron-lbaas-dashboard.git
+  git:
+    repo: 'https://git.openstack.org/openstack/neutron-lbaas-dashboard.git'
+    dest: /root/neutron-lbaas-dashboard
+    version: stable/ocata
+    force: yes
+
+- name: python setup.py install
+  command: python setup.py install
+  args:
+    chdir: /root/neutron-lbaas-dashboard/
+    
+- name: copy _1481_project_ng_loadbalancersv2_panel.py
+  command: \cp -f /root/neutron-lbaas-dashboard/neutron_lbaas_dashboard/enabled/_1481_project_ng_loadbalancersv2_panel.py /usr/share/openstack-dashboard/openstack_dashboard/local/enabled/
+
+- name: openstack horizon enable_lb True
+  lineinfile:
+    path: /usr/share/openstack-dashboard/openstack_dashboard/local/local_settings.py
+    regexp: "^    'enable_lb': .*,"
+    line: "    'enable_lb': True,"
+    backup: yes
+
+- name: restart httpd.service
+  service:
+    name: httpd
+    enabled: yes
+    masked: no
+    state: restarted
+

@@ -1,0 +1,29 @@
+---
+
+# cert cn
+openstack_fqdn : your.opstack.fqdn
+
+# node ip
+controller_ip: x.x.x.x
+compute1_ip  : x.x.x.x
+compute2_ip  : x.x.x.x
+storage1_ip  : x.x.x.x
+zabbix_ip    : x.x.x.x
+controller_tunnel_ip: x.x.x.x
+compute1_tunnel_ip  : x.x.x.x
+compute2_tunnel_ip  : x.x.x.x
+storage1_iscsi_ip: x.x.x.x
+iscsi_network: x.x.x.x/24
+
+# rdo params
+external_if  : eth3
+tunnel_if    : eth1
+swift_size   : xxG
+metadata_pass: xxxxxxxxxxxxxxxx
+database_pass: xxxxxxxxxxxxxxxx
+admin_pass   : xxxxxxxxxxxxxxxx
+
+# cinder params
+cinder_pass  : xxxxxxxxxxxxxxxx
+cinder_dbpass: xxxxxxxxxxxxxxxx
+

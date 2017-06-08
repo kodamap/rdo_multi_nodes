@@ -1,0 +1,68 @@
+---
+
+- name: install rdo repo
+  yum:
+    name: https://rdoproject.org/repos/rdo-release.rpm
+    state: present
+
+- name: install needed packages
+  yum:
+    name: '{{ item }}'
+    state: installed
+  with_items:
+    - iptables-services
+    - lvm2
+    - openstack-utils
+    - openstack-selinux
+
+- name: start iptables.service
+  service:
+    name: iptables
+    enabled: yes
+    masked: no
+    state: started
+
+- iptables_raw:
+    name: accept_iscsi
+    rules: '-A INPUT -s  {{ iscsi_network }} -p tcp -m multiport --dports 3260 -m comment --comment "001 target incoming target_compute nodes" -j ACCEPT'
+    backup: yes
+
+- name: copy lvm.conf
+  copy: src=lvm.conf dest=/etc/lvm owner=root group=root mode=0644 backup=yes
+
+- lvg:
+    vg: cinder-volumes
+    pvs: /dev/vdb
+
+- name: start lvm2-lvmetad.service
+  service:
+    name: lvm2-lvmetad 
+    enabled: yes
+    masked: no
+    state: started
+
+- name: copy cinder script
+  copy: src=cinder_block.sh dest=/root owner=root group=root mode=0755 backup=no
+
+- name: set cinder parames
+  lineinfile:
+    path: /root/cinder_block.sh
+    regexp: '{{ item.regexp }}'
+    line: '{{ item.line }}'
+    backup: yes
+  with_items:
+    - regexp: '^DATABASE_PASS=.*'
+      line: 'DATABASE_PASS={{ database_pass }}'
+    - regexp: '^CINDER_PASS=.*'
+      line: 'CINDER_PASS={{ cinder_pass }}'
+    - regexp: '^CINDER_DBPASS=.*'
+      line: 'CINDER_DBPASS={{ cinder_dbpass }}'
+
+- name: exec cinder script
+  command: /root/cinder_block.sh controller {{ storage1_ip }} {{ storage1_iscsi_ip }}
+  register: result
+
+- debug: var=result.stdout_lines
+  when: result | success
+
+

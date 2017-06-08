@@ -1,0 +1,57 @@
+---
+
+- name: install cinder
+  yum:
+    name: https://rdoproject.org/repos/rdo-release.rpm
+    state: present
+
+- name: install openstack-utils
+  yum:
+    name: '{{ item }}'
+    state: present
+  with_items:
+    - openstack-utils
+    
+- name: copy cinder script
+  copy: src=cinder_controller.sh dest=/root owner=root group=root mode=0755 backup=no
+
+- name: set cinder parames
+  lineinfile:
+    path: /root/cinder_controller.sh
+    regexp: '{{ item.regexp }}'
+    line: '{{ item.line }}'
+    backup: yes
+  with_items:
+    - regexp: '^DATABASE_PASS=.*'
+      line: 'DATABASE_PASS={{ database_pass }}'
+    - regexp: '^CINDER_PASS=.*'
+      line: 'CINDER_PASS={{ cinder_pass }}'
+    - regexp: '^CINDER_DBPASS=.*'
+      line: 'CINDER_DBPASS={{ cinder_dbpass }}'
+
+- name: ensure cinder database is present
+  mysql_db: 
+    name: cinder
+
+- name: ensure cinder database user is present
+  mysql_user: 
+    name: cinder 
+    host: "{{ item }}" 
+    password: "{{ cinder_dbpass }}" 
+    priv: cinder.*:ALL
+  with_items:
+    - "%"
+    - localhost
+
+- name: exec cinder install script
+  command: /root/cinder_controller.sh {{ controller_ip }}
+  register: result
+- debug: var=result.stdout_lines
+  when: result | success
+
+- name: openstack volume service list
+  shell: . /root/admin-openrc && openstack volume service list
+  register: result
+- debug: var=result.stdout_lines
+  when: result | success
+

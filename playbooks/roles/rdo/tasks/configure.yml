@@ -1,0 +1,86 @@
+---
+
+- name: install rdo repo
+  yum:
+    name: https://rdoproject.org/repos/rdo-release.rpm
+    state: present
+
+- name: install packstack
+  yum:
+    name: '{{ item }}'
+    state: present
+  with_items:
+    - openstack-packstack
+    - git
+    - wget
+    - nfs-utils
+
+
+- name: yum update
+  yum: state=latest name=*
+
+- name: create self-signed SSL cert
+  command: openssl req -new -nodes -x509 -subj "/C=JP/ST=Tokyo/L=XX/O=XX/CN={{ openstack_fqdn }}" -days 3650 -keyout /etc/pki/tls/private/selfkey.key -out /etc/pki/tls/certs/selfcert.crt
+
+- name: create vnc SSL cert
+  command: openssl req -new -nodes -x509 -subj "/C=JP/ST=Tokyo/L=XX/O=XX/CN={{ openstack_fqdn }}" -days 3650 -keyout /etc/pki/tls/private/ssl_vnc.key -out /etc/pki/tls/certs/ssl_vnc.crt
+  
+- name: create dashboard SSL cert
+  command: openssl req -new -nodes -x509 -subj "/C=JP/ST=Tokyo/L=XX/O=XX/CN={{ openstack_fqdn }}" -days 3650 -keyout /etc/pki/tls/private/ssl_dashboard.key -out /etc/pki/tls/certs/ssl_dashboard.crt
+  
+- name: packstack generate answer file 
+  command: >
+    packstack
+      --gen-answer-file=/root/answerfile.txt
+      --os-neutron-metadata-pw={{ metadata_pass }}
+      --mariadb-pw={{ database_pass }}
+      --os-heat-install=y
+      --provision-demo=n
+      --nagios-install=n
+      --keystone-admin-passwd={{ admin_pass }}
+      --os-compute-hosts={{ compute1_ip }},{{ compute2_ip }}
+      --os-swift-install=y
+      --os-cinder-install=n
+      --os-ceilometer-install=y
+      --os-neutron-lbaas-install=y
+      --os-magnum-install=y
+      --os-neutron-ovs-bridge-mappings=extnet:br-ex
+      --os-neutron-ovs-bridge-interfaces=br-ex:{{ external_if }}
+      --os-neutron-ovs-tunnel-if={{ tunnel_if }}
+      --os-swift-storage-size={{ swift_size }}
+      --os-horizon-ssl=y
+
+- name: modify answerfile 
+  lineinfile:
+    path: /root/answerfile.txt
+    regexp: "^CONFIG_VNC_SSL_CERT=.*"
+    line: "CONFIG_VNC_SSL_CERT=/etc/pki/tls/certs/ssl_vnc.crt"
+    backup: yes
+
+- name: modify answerfile 
+  lineinfile:
+    path: /root/answerfile.txt
+    regexp: "^CONFIG_VNC_SSL_KEY=.*"
+    line: "CONFIG_VNC_SSL_KEY=/etc/pki/tls/private/ssl_vnc.key"
+
+- name: modify answerfile 
+  lineinfile:
+    path: /root/answerfile.txt
+    regexp: "^CONFIG_HORIZON_SSL_CERT=.*"
+    line: "CONFIG_HORIZON_SSL_CERT=/etc/pki/tls/certs/ssl_dashboard.crt"
+
+- name: modify answerfile 
+  lineinfile:
+    path: /root/answerfile.txt
+    regexp: "^CONFIG_HORIZON_SSL_KEY=.*"
+    line: "CONFIG_HORIZON_SSL_KEY=/etc/pki/tls/private/ssl_dashboard.key"
+
+- name: modify answerfile 
+  lineinfile:
+    path: /root/answerfile.txt
+    regexp: "^CONFIG_HORIZON_SSL_CACERT=.*"
+    line: "CONFIG_HORIZON_SSL_CACERT=/etc/pki/tls/certs/selfcert.crt"
+    
+- name: install rdo - it will take 40 minutes or so... 
+  command: packstack --answer-file=/root/answerfile.txt
+

@@ -1,0 +1,45 @@
+---
+
+- name: install openstack repo
+  yum:
+    name: https://rdoproject.org/repos/rdo-release.rpm
+    state: present
+
+- name: install openstack-utils
+  yum:
+    name: '{{ item }}'
+    state: present
+  with_items:
+    - openstack-utils
+
+- name: /etc/nova/nova.conf
+  lineinfile: 
+    path: /etc/nova/nova.conf
+    regexp: '^virt_type=.*'
+    line: 'virt_type=kvm'
+    backup: yes
+
+- name: /etc/nova/nova.conf
+  lineinfile:
+    path: /etc/nova/nova.conf
+    regexp: '^allow_resize_to_same_host=.*'
+    line: 'allow_resize_to_same_host=true'
+
+- name: /etc/nova/nova.conf
+  lineinfile:
+    path: /etc/nova/nova.conf
+    regexp: 'disk_allocation_ratio=.*'
+    line: 'disk_allocation_ratio=10.0'
+
+- name: /etc/nova/nova.conf
+  lineinfile:
+    path: /etc/nova/nova.conf
+    regexp: '^inject_password=.*'
+    line: 'inject_password=true'
+
+- name: restart openstack-nova-compute.service
+  service:
+    name: openstack-nova-compute
+    enabled: yes
+    masked: no
+    state: restarted

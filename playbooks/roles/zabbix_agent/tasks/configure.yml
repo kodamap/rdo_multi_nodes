@@ -1,0 +1,33 @@
+---
+
+- name: copy zabbix agent package
+  copy: src=zabbix-agent-3.2.6-1.el7.x86_64.rpm dest=/root owner=root group=root mode=0644
+
+- name: install zabbix agent
+  yum:
+     name: /root/zabbix-agent-3.2.6-1.el7.x86_64.rpm
+     state: present
+
+- name: zabbix agent conf
+  lineinfile:
+    path: /etc/zabbix/zabbix_agentd.conf
+    regexp: '^Server=.*'
+    line: 'Server=zabbix'
+
+- name: zabbix agent conf
+  lineinfile:
+    path: /etc/zabbix/zabbix_agentd.conf
+    regexp: '^ServerActive=.*'
+    line: 'ServerActive=zabbix'
+
+- name: enable zabbix-agent.service
+  service:
+    name: zabbix-agent
+    enabled: yes
+    masked: no
+    state: started
+
+- iptables_raw:
+    name: zabbix_agent
+    rules: '-A INPUT -s {{ zabbix_ip }}/32 -p tcp -m multiport --dports 10050 -m comment --comment "001 zabbix incoming zabbix-agent" -j ACCEPT'
+    backup: yes

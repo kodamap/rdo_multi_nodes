@@ -1,0 +1,38 @@
+---
+
+- name: configure lbaas settings on the controller node
+  hosts: controller 
+  vars_files:
+    - vars/{{ stage }}.yml
+  gather_facts: no
+ 
+  roles:
+    - lbaas
+
+- name: configure dvr settings on the controller node
+  hosts: controller 
+  vars_files:
+    - vars/{{ stage }}.yml
+  gather_facts: no
+ 
+  roles:
+    - dvr_controller
+
+- name: configure dvr settings on the compute nodes
+  hosts: compute 
+  vars_files:
+    - vars/{{ stage }}.yml
+  gather_facts: no
+ 
+  roles:
+    - dvr_compute
+
+- name: check openstack status
+  hosts: controller 
+  vars_files:
+    - vars/{{ stage }}.yml
+  gather_facts: no
+ 
+  roles:
+    - check_status
+
