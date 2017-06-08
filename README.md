@@ -45,11 +45,10 @@ most of parameters are set to the packstack answerfile
       --os-horizon-ssl=y
 ```
 
+### configure hosts file that will be copy to the openstack nodes
 
-- configure hosts file that will be copy to the openstack nodes
-
-roles/common/files/hosts.produciton
-roles/common/files/hosts.staging
+- roles/common/files/hosts.produciton
+- roles/common/files/hosts.staging
 
 ## deploy (staging)
 
