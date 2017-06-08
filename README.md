@@ -2,17 +2,20 @@
 
 this is openstack(ocata) deployment with rdo packstack and ansible on centos7 nodes.
 
+<a href="https://raw.githubusercontent.com/wiki/kodamap/rdo_multi_nodes/images/rdo_multi_nodes_example.png">
+<img src="https://raw.githubusercontent.com/wiki/kodamap/rdo_multi_nodes/images/rdo_multi_nodes_example.png" alt="rdo_multi_nodes_example.png" style="width:75%;height:auto;" ></a>
+
 ## prerequisites
 
 ### configure ansible_hosts
 
-ansible_hosts.production    # for production
-ansible_hosts.staging    # for staging
+- ansible_hosts.production    # for production
+- ansible_hosts.staging    # for staging
 
 ### configure parameters
 
-vars/production.yml      # for production
-vars/staging.yml         # for staging
+- vars/production.yml      # for production
+- vars/staging.yml         # for staging
 
 most of parameters are set to the packstack answerfile
 
