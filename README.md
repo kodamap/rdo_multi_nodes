@@ -1,5 +1,7 @@
 # openstack deploy with rdo and configure with ansible
 
+this is openstack(ocata) deployment with rdo packstack and ansible on centos7 nodes.
+
 ## prerequisites
 
 ### configure ansible_hosts
